@@ -1,0 +1,54 @@
+<Page
+    x:Class="DiwoonPixelArtManager.Views.ProfilesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    NavigationCacheMode="Required">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36,24,36,24">
+        <StackPanel Spacing="12">
+
+            <TextBlock Text="App profiles" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock Text="Show something specific while an app is open: the PC monitor while you play, the music while Spotify is in front, the app's own icon…"
+                       Style="{StaticResource BodyTextBlockStyle}" TextWrapping="Wrap"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,8" />
+
+            <Border Style="{StaticResource CardStyle}">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <FontIcon Glyph="&#xE7FC;" Style="{StaticResource CardIcon}" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Use app profiles" Style="{StaticResource CardTitle}" />
+                        <TextBlock x:Name="ActiveText" Style="{StaticResource CardDescription}" />
+                    </StackPanel>
+                    <ToggleSwitch x:Name="EnabledToggle" Grid.Column="2" Toggled="Enabled_Toggled" />
+                </Grid>
+            </Border>
+
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,8,0,4">
+                <FontIcon Glyph="&#xE71D;" Style="{StaticResource SectionIcon}" />
+                <TextBlock Grid.Column="1" Text="APPS" Style="{StaticResource SectionHeader}" />
+                <DropDownButton Grid.Column="2" Style="{StaticResource Action}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE710;" FontSize="14" />
+                        <TextBlock Text="Add app" />
+                    </StackPanel>
+                    <DropDownButton.Flyout>
+                        <MenuFlyout x:Name="AddAppFlyout" Placement="BottomEdgeAlignedRight" Opening="AddAppFlyout_Opening" />
+                    </DropDownButton.Flyout>
+                </DropDownButton>
+            </Grid>
+
+            <TextBlock Text="An app in front wins over one that is only running; among those, the one higher in the list wins. When no profile matches, the display goes back to what you chose."
+                       Style="{StaticResource CardDescription}" />
+
+            <StackPanel x:Name="ProfileList" Spacing="8" />
+
+            <StackPanel x:Name="EmptyState" Spacing="6" HorizontalAlignment="Center" Margin="0,32,0,0">
+                <FontIcon Glyph="&#xE7FC;" FontSize="40" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                <TextBlock Text="No profiles yet" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Center" />
+                <TextBlock Text="Open the app you want, then use Add app." Style="{StaticResource CardDescription}" HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <InfoBar x:Name="Message" IsOpen="False" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

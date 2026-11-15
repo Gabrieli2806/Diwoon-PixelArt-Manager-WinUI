@@ -1,0 +1,207 @@
+<Page
+    x:Class="DiwoonPixelArtManager.Views.MonitorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    NavigationCacheMode="Required">
+
+    <Page.Resources>
+        <Style x:Key="StatValue" TargetType="TextBlock" BasedOn="{StaticResource SubtitleTextBlockStyle}">
+            <Setter Property="FontSize" Value="26" />
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36,24,36,24">
+        <StackPanel Spacing="12">
+
+            <TextBlock Text="PC Monitor" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock Text="Temperatures and load of this PC, on screen and on the display, plus alerts for PC events"
+                       Style="{StaticResource BodyTextBlockStyle}"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,8" />
+
+            <!-- Sensors -->
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="0,8,0,4">
+                <FontIcon Glyph="&#xE9D9;" Style="{StaticResource SectionIcon}" />
+                <TextBlock Grid.Column="1" Text="SENSORS" Style="{StaticResource SectionHeader}" />
+            </Grid>
+
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="CPU temperature" Style="{StaticResource CardDescription}" />
+                        <TextBlock x:Name="CpuTempText" Text="--" Style="{StaticResource StatValue}" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="GPU temperature" Style="{StaticResource CardDescription}" />
+                        <TextBlock x:Name="GpuTempText" Text="--" Style="{StaticResource StatValue}" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="CPU load" Style="{StaticResource CardDescription}" />
+                        <TextBlock x:Name="CpuLoadText" Text="--" Style="{StaticResource StatValue}" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="3" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="GPU load" Style="{StaticResource CardDescription}" />
+                        <TextBlock x:Name="GpuLoadText" Text="--" Style="{StaticResource StatValue}" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="4" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Memory" Style="{StaticResource CardDescription}" />
+                        <TextBlock x:Name="RamText" Text="--" Style="{StaticResource StatValue}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <TextBlock x:Name="SourceText" Style="{StaticResource CardDescription}" />
+            <InfoBar x:Name="LhmTip" Severity="Informational" IsClosable="False" IsOpen="False"
+                     Title="CPU temperature needs a sensor reader"
+                     Message="Windows does not give programs the real CPU temperature. Until one is available, the display shows CPU load instead. LibreHardwareMonitor with Options → Remote Web Server turned on is read automatically." />
+
+            <Border Style="{StaticResource CardStyle}">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <FontIcon Glyph="&#xE774;" Style="{StaticResource CardIcon}" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="LibreHardwareMonitor address" Style="{StaticResource CardTitle}" />
+                        <TextBlock Text="Its web server's data.json; leave empty to use only the built-in sensors" Style="{StaticResource CardDescription}" />
+                    </StackPanel>
+                    <TextBox x:Name="LhmUrlBox" Grid.Column="2" Width="280" LostFocus="LhmUrl_LostFocus" />
+                </Grid>
+            </Border>
+
+            <!-- On the display -->
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="0,8,0,4">
+                <FontIcon Glyph="&#xE7B3;" Style="{StaticResource SectionIcon}" />
+                <TextBlock Grid.Column="1" Text="ON THE DISPLAY" Style="{StaticResource SectionHeader}" />
+            </Grid>
+
+            <Border Style="{StaticResource CardStyle}">
+                <Grid ColumnSpacing="24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid Width="256" Height="256" CornerRadius="6" Background="{StaticResource LedBackgroundBrush}">
+                        <Image x:Name="PreviewImage" Stretch="None" />
+                    </Grid>
+                    <StackPanel Grid.Column="1" Spacing="16" VerticalAlignment="Center">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <StackPanel>
+                                <TextBlock Text="Show PC monitor on the display" Style="{StaticResource CardTitle}" />
+                                <TextBlock Text="Replaces the picture or slideshow until you send something else. Also in the tray menu."
+                                           Style="{StaticResource CardDescription}" />
+                            </StackPanel>
+                            <ToggleSwitch x:Name="MonitorToggle" Grid.Column="1" Toggled="MonitorToggle_Toggled" />
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <StackPanel>
+                                <TextBlock Text="Refresh every" Style="{StaticResource CardTitle}" />
+                                <TextBlock Text="Shorter is livelier; longer sends less over Bluetooth" Style="{StaticResource CardDescription}" />
+                            </StackPanel>
+                            <ComboBox x:Name="IntervalCombo" Grid.Column="1" Width="140" SelectionChanged="Interval_Changed">
+                                <ComboBoxItem Content="1 second" Tag="1" />
+                                <ComboBoxItem Content="2 seconds" Tag="2" />
+                                <ComboBoxItem Content="5 seconds" Tag="5" />
+                                <ComboBoxItem Content="10 seconds" Tag="10" />
+                            </ComboBox>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Alerts -->
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="0,8,0,4">
+                <FontIcon Glyph="&#xEA8F;" Style="{StaticResource SectionIcon}" />
+                <TextBlock Grid.Column="1" Text="ALERTS" Style="{StaticResource SectionHeader}" />
+            </Grid>
+
+            <Border Style="{StaticResource CardStyle}">
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                    <FontIcon Glyph="&#xE9CA;" Style="{StaticResource CardIcon}" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="High temperature" Style="{StaticResource CardTitle}" />
+                        <TextBlock Text="When the CPU or GPU reaches this temperature (°C); repeats every 5 minutes while it stays hot"
+                                   Style="{StaticResource CardDescription}" />
+                    </StackPanel>
+                    <NumberBox x:Name="HotBox" Grid.Column="2" Width="110" Minimum="40" Maximum="110"
+                               SpinButtonPlacementMode="Compact" ValueChanged="Alert_ValueChanged" />
+                    <ToggleSwitch x:Name="HotToggle" Grid.Column="3" Toggled="Alert_Toggled" />
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                    <FontIcon Glyph="&#xEBA0;" Style="{StaticResource CardIcon}" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Low battery" Style="{StaticResource CardTitle}" />
+                        <TextBlock Text="Laptops: when the charge drops to this percentage while unplugged" Style="{StaticResource CardDescription}" />
+                    </StackPanel>
+                    <NumberBox x:Name="BatteryBox" Grid.Column="2" Width="110" Minimum="5" Maximum="50"
+                               SpinButtonPlacementMode="Compact" ValueChanged="Alert_ValueChanged" />
+                    <ToggleSwitch x:Name="BatteryToggle" Grid.Column="3" Toggled="Alert_Toggled" />
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <FontIcon Glyph="&#xE83E;" Style="{StaticResource CardIcon}" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Charger plugged or unplugged" Style="{StaticResource CardTitle}" />
+                        <TextBlock Text="Laptops: shows the battery level when power changes" Style="{StaticResource CardDescription}" />
+                    </StackPanel>
+                    <ToggleSwitch x:Name="PowerToggle" Grid.Column="2" Toggled="Alert_Toggled" />
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <FontIcon Glyph="&#xE72E;" Style="{StaticResource CardIcon}" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Screen off when the PC is locked" Style="{StaticResource CardTitle}" />
+                        <TextBlock Text="Turns the LEDs off on Win+L and back on when you sign in" Style="{StaticResource CardDescription}" />
+                    </StackPanel>
+                    <ToggleSwitch x:Name="LockToggle" Grid.Column="2" Toggled="Alert_Toggled" />
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                    <FontIcon Glyph="&#xE916;" Style="{StaticResource CardIcon}" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Alert duration" Style="{StaticResource CardTitle}" />
+                        <TextBlock Text="Seconds an alert stays before the previous content comes back" Style="{StaticResource CardDescription}" />
+                    </StackPanel>
+                    <NumberBox x:Name="DurationBox" Grid.Column="2" Width="110" Minimum="2" Maximum="60"
+                               SpinButtonPlacementMode="Compact" ValueChanged="Alert_ValueChanged" />
+                    <Button Grid.Column="3" Style="{StaticResource Action}" Content="Test" Click="TestAlert_Click" />
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                    <FontIcon Glyph="&#xE943;" Style="{StaticResource CardIcon}" />
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Alerts from other programs" Style="{StaticResource CardTitle}" />
+                        <TextBlock Style="{StaticResource CardDescription}" IsTextSelectionEnabled="True"
+                                   Text="Turn on the HTTP API in Settings, then any script can show an alert. Icons: bell, check, cross, info, hot, battery, charging." />
+                        <TextBlock x:Name="NotifyExampleText" IsTextSelectionEnabled="True" FontFamily="Consolas" FontSize="12"
+                                   Margin="0,6,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <InfoBar x:Name="Message" IsOpen="False" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

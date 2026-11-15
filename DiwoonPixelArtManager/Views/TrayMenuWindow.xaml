@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Window x:Class="DiwoonPixelArtManager.Views.TrayMenuWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- The notification-area menu, as a window: a classic popup menu is a list of strings and cannot
+         show what the display is doing, which is what is worth seeing from the tray. -->
+    <Border x:Name="Root" Padding="8" CornerRadius="8" Background="Transparent">
+        <Border.Resources>
+            <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="Transparent" />
+            <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="Transparent" />
+        </Border.Resources>
+        <StackPanel Spacing="2">
+            <Grid Margin="6,4,6,8" ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                <Grid Width="30" Height="30" VerticalAlignment="Center">
+                    <Ellipse x:Name="StatusHalo" Opacity="0.18" />
+                    <FontIcon x:Name="StatusGlyph" FontSize="15" />
+                </Grid>
+                <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="StatusTitle" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock x:Name="StatusDetail" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+            </Grid>
+            <Border Height="1" Margin="0,0,0,6" Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            <StackPanel x:Name="Items" Spacing="2" />
+        </StackPanel>
+    </Border>
+</Window>

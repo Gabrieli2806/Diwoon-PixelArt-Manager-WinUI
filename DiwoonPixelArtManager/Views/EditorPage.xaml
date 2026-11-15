@@ -1,0 +1,130 @@
+<Page
+    x:Class="DiwoonPixelArtManager.Views.EditorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    NavigationCacheMode="Required">
+
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator Modifiers="Control" Key="Z" Invoked="Undo_Invoked" />
+        <KeyboardAccelerator Modifiers="Control" Key="Y" Invoked="Redo_Invoked" />
+    </Page.KeyboardAccelerators>
+
+    <Grid Padding="36,24,24,24" ColumnSpacing="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.ColumnSpan="2" Margin="0,0,0,16">
+            <TextBlock Text="Editor" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock Text="Draw at the display's resolution. Left click paints, right click erases."
+                       Style="{StaticResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
+
+        <!-- Canvas -->
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" VerticalAlignment="Top">
+            <Grid x:Name="CanvasHost" Width="512" Height="512" Background="{StaticResource LedBackgroundBrush}"
+                  PointerPressed="Canvas_PointerPressed" PointerMoved="Canvas_PointerMoved"
+                  PointerReleased="Canvas_PointerReleased" PointerCanceled="Canvas_PointerReleased"
+                  PointerCaptureLost="Canvas_PointerReleased">
+                <Image x:Name="CanvasImage" Stretch="Fill" />
+            </Grid>
+        </Border>
+
+        <!-- Tools -->
+        <ScrollViewer Grid.Row="1" Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="12">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <FontIcon Glyph="&#xE70F;" Style="{StaticResource SectionIcon}" />
+                    <TextBlock Grid.Column="1" Text="TOOLS" Style="{StaticResource SectionHeader}" />
+                </Grid>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <ToggleButton x:Name="PencilTool" IsChecked="True" Click="Tool_Click" ToolTipService.ToolTip="Pencil (B)">
+                                <FontIcon Glyph="&#xE70F;" FontSize="16" />
+                            </ToggleButton>
+                            <ToggleButton x:Name="EraserTool" Click="Tool_Click" ToolTipService.ToolTip="Eraser (E)">
+                                <FontIcon Glyph="&#xE75C;" FontSize="16" />
+                            </ToggleButton>
+                            <ToggleButton x:Name="FillTool" Click="Tool_Click" ToolTipService.ToolTip="Fill (G)">
+                                <FontIcon Glyph="&#xE771;" FontSize="16" />
+                            </ToggleButton>
+                            <ToggleButton x:Name="PickerTool" Click="Tool_Click" ToolTipService.ToolTip="Pick color (I)">
+                                <FontIcon Glyph="&#xEF3C;" FontSize="16" />
+                            </ToggleButton>
+                            <AppBarSeparator />
+                            <Button Click="Undo_Click" ToolTipService.ToolTip="Undo (Ctrl+Z)">
+                                <FontIcon Glyph="&#xE7A7;" FontSize="16" />
+                            </Button>
+                            <Button Click="Redo_Click" ToolTipService.ToolTip="Redo (Ctrl+Y)">
+                                <FontIcon Glyph="&#xE7A6;" FontSize="16" />
+                            </Button>
+                            <Button Click="Clear_Click" ToolTipService.ToolTip="Clear">
+                                <FontIcon Glyph="&#xE74D;" FontSize="16" />
+                            </Button>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <DropDownButton ToolTipService.ToolTip="Color">
+                                <Border x:Name="ColorSwatch" Width="32" Height="20" CornerRadius="3" Background="#FF004D" />
+                                <DropDownButton.Flyout>
+                                    <Flyout>
+                                        <ColorPicker x:Name="ColorPickerControl" Color="#FF004D" IsAlphaEnabled="False" ColorChanged="ColorPicker_ColorChanged" />
+                                    </Flyout>
+                                </DropDownButton.Flyout>
+                            </DropDownButton>
+                            <VariableSizedWrapGrid x:Name="PaletteGrid" Orientation="Horizontal" MaximumRowsOrColumns="8"
+                                                   ItemWidth="26" ItemHeight="26" />
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <TextBlock Text="Canvas size" Style="{StaticResource CardTitle}" VerticalAlignment="Center" />
+                            <ComboBox x:Name="SizeCombo" Grid.Column="1" Width="140" SelectionChanged="Size_Changed">
+                                <ComboBoxItem Content="16 × 16" Tag="16" />
+                                <ComboBoxItem Content="32 × 32" Tag="32" />
+                                <ComboBoxItem Content="64 × 64" Tag="64" />
+                            </ComboBox>
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <TextBlock Text="Grid" Style="{StaticResource CardTitle}" VerticalAlignment="Center" />
+                            <ToggleSwitch x:Name="GridToggle" Grid.Column="1" IsOn="True" Toggled="Grid_Toggled" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="0,8,0,0">
+                    <FontIcon Glyph="&#xE7B3;" Style="{StaticResource SectionIcon}" />
+                    <TextBlock Grid.Column="1" Text="DISPLAY AND GALLERY" Style="{StaticResource SectionHeader}" />
+                </Grid>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <StackPanel>
+                                <TextBlock Text="Live on the display" Style="{StaticResource CardTitle}" />
+                                <TextBlock Text="Every stroke appears on the display as you draw" Style="{StaticResource CardDescription}" />
+                            </StackPanel>
+                            <ToggleSwitch x:Name="LiveToggle" Grid.Column="1" Toggled="Live_Toggled" />
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <TextBox x:Name="NameBox" PlaceholderText="Name, for example heart" />
+                            <Button Grid.Column="1" Style="{StaticResource PrimaryAction}" Click="Save_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE74E;" FontSize="14" />
+                                    <TextBlock Text="Save to gallery" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        <TextBlock x:Name="SaveFolderText" Style="{StaticResource CardDescription}" IsTextSelectionEnabled="True" />
+                    </StackPanel>
+                </Border>
+
+                <InfoBar x:Name="Message" IsOpen="False" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
