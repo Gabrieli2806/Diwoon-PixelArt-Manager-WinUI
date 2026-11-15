@@ -76,7 +76,10 @@ public partial class App : Application
         HttpBridgeService.Instance.ApplySettings();
         _ = DivoomConnection.Instance.ConnectToLastDeviceAsync();
 
-        if (!Environment.GetCommandLineArgs().Contains(StartupService.MinimizedArgument))
+        // Started with Windows: the Run entry passes --minimized, the package's startup task has its own activation kind.
+        bool atLogon = Environment.GetCommandLineArgs().Contains(StartupService.MinimizedArgument)
+            || AppInstance.GetCurrent().GetActivatedEventArgs().Kind == ExtendedActivationKind.StartupTask;
+        if (!atLogon)
             MainWindow.Activate();
     }
 

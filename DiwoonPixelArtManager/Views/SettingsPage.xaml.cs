@@ -19,7 +19,6 @@ public sealed partial class SettingsPage : Page
         Select(FitCombo, s.Fit.ToString());
         SlideshowBox.Value = s.SlideshowSeconds;
         ShuffleToggle.IsOn = s.SlideshowShuffle;
-        StartupToggle.IsOn = StartupService.IsEnabled;
         TrayToggle.IsOn = s.CloseToTray;
         AutoConnectToggle.IsOn = s.AutoConnect;
         BridgeToggle.IsOn = s.HttpBridgeEnabled;
@@ -30,6 +29,7 @@ public sealed partial class SettingsPage : Page
 
         _loaded = true;
         UpdateBridgeStatus();
+        _ = LoadStartupStateAsync();
     }
 
     private static void Select(ComboBox combo, string tag) =>
@@ -66,9 +66,27 @@ public sealed partial class SettingsPage : Page
         _settings.Save();
     }
 
-    private void Startup_Toggled(object sender, RoutedEventArgs e)
+    private bool _startupLoading;
+
+    private async Task LoadStartupStateAsync()
     {
-        if (_loaded) StartupService.SetEnabled(StartupToggle.IsOn);
+        _startupLoading = true;
+        StartupToggle.IsOn = await StartupService.IsEnabledAsync();
+        _startupLoading = false;
+    }
+
+    private async void Startup_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (!_loaded || _startupLoading) return;
+        bool wanted = StartupToggle.IsOn;
+        bool actual = await StartupService.SetEnabledAsync(wanted);
+        if (actual != wanted)
+        {
+            // Windows keeps the choice made in Task Manager / Settings › Apps › Startup; show what is really set.
+            _startupLoading = true;
+            StartupToggle.IsOn = actual;
+            _startupLoading = false;
+        }
     }
 
     private void Bridge_Toggled(object sender, RoutedEventArgs e)

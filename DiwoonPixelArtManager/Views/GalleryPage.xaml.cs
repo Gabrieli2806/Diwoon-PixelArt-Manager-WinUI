@@ -254,6 +254,7 @@ public sealed partial class GalleryPage : Page
         EditIcon.Glyph = folder ? "" : "";
         SendButton.IsEnabled = entry is not null;
         EditButton.IsEnabled = entry is not null;
+        RenameButton.Visibility = folder ? Visibility.Visible : Visibility.Collapsed;
 
         int size = _connection.DisplaySize;
         string settingsText = $"{size}×{size} · {_settings.Settings.Scaling} scaling · {_settings.Settings.Fit}";
@@ -301,6 +302,73 @@ public sealed partial class GalleryPage : Page
     }
 
     // ---------------------------------------------------------------- Actions
+
+    /// <summary>Right-click on a card: the same actions as the side panel, for that card.</summary>
+    private void ArtGrid_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    {
+        if ((e.OriginalSource as FrameworkElement)?.DataContext is not GalleryEntry entry) return;
+        if (!ArtGrid.SelectedItems.Contains(entry))
+        {
+            ArtGrid.SelectedItems.Clear();
+            ArtGrid.SelectedItem = entry;
+        }
+
+        var menu = new MenuFlyout();
+        void Add(string text, string glyph, Action action)
+        {
+            var item = new MenuFlyoutItem { Text = text, Icon = new FontIcon { Glyph = glyph } };
+            item.Click += (_, _) => action();
+            menu.Items.Add(item);
+        }
+        if (entry.IsFolder)
+        {
+            Add("Open", "", () => OpenFolder(entry.Folder!.Path));
+            Add("Play on display", "", () => StartSlideshow(entry.Folder!.Items, entry.Name));
+            Add("Rename…", "", () => _ = RenameAsync(entry.Folder!));
+        }
+        else if (entry.Item is { } image)
+        {
+            Add("Send to display", "", () => _ = SendAsync());
+            Add("Edit a copy", "", () => (App.MainWindow.Content as MainPage)?.ShowEditor(image.Path));
+        }
+        menu.Items.Add(new MenuFlyoutSeparator());
+        Add("Remove from gallery", "", () => Remove_Click(this, new RoutedEventArgs()));
+        menu.ShowAt(ArtGrid, e.GetPosition(ArtGrid));
+        e.Handled = true;
+    }
+
+    private async void Rename_Click(object sender, RoutedEventArgs e)
+    {
+        if (SelectedEntry is { IsFolder: true } entry) await RenameAsync(entry.Folder!);
+    }
+
+    /// <summary>Asks for a new name for a gallery folder. Only the app uses it; the folder on disk is not renamed.</summary>
+    private async Task RenameAsync(LibraryFolder folder)
+    {
+        var box = new TextBox { Text = folder.Name, PlaceholderText = folder.DiskName };
+        box.Loaded += (_, _) => { box.Focus(FocusState.Programmatic); box.SelectAll(); };
+        var content = new StackPanel { Spacing = 8 };
+        content.Children.Add(box);
+        content.Children.Add(new TextBlock
+        {
+            Text = $"Only this app uses the new name. The folder on disk stays \"{folder.DiskName}\".",
+            Style = (Style)Application.Current.Resources["CardDescription"]
+        });
+
+        var dialog = new ContentDialog
+        {
+            Title = "Rename folder",
+            Content = content,
+            PrimaryButtonText = "Rename",
+            SecondaryButtonText = folder.CustomName is null ? "" : "Use folder's own name",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = XamlRoot
+        };
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary) _library.RenameFolder(folder.Path, box.Text);
+        else if (result == ContentDialogResult.Secondary) _library.RenameFolder(folder.Path, null);
+    }
 
     private async void Send_Click(object sender, RoutedEventArgs e)
     {

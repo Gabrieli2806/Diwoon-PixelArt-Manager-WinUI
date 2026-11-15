@@ -1,0 +1,104 @@
+name: Build and release
+
+# Every push builds the downloads and keeps them as workflow artifacts.
+# Pushing a tag like v1.2.0 also publishes them as a GitHub release.
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PROJECT: DiwoonPixelArtManager/DiwoonPixelArtManager.csproj
+  MANIFEST: DiwoonPixelArtManager/Package.appxmanifest
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Version
+        id: version
+        shell: pwsh
+        run: |
+          $version = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}".TrimStart("v") } else { "1.0.${{ github.run_number }}" }
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "Tags must look like v1.2.3 (got '${{ github.ref_name }}')." }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          New-Item -ItemType Directory -Force release | Out-Null
+
+      # Portable: a folder with everything it needs (.NET and the Windows App SDK included), zipped.
+      - name: Portable build
+        shell: pwsh
+        run: |
+          dotnet publish $env:PROJECT -c Release -p:Platform=x64 -r win-x64 --self-contained `
+            -p:Version=${{ steps.version.outputs.version }} -o publish/win-x64
+          Compress-Archive -Path publish/win-x64/* -DestinationPath "release/DiwoonPixelArtManager-${{ steps.version.outputs.version }}-portable-x64.zip"
+
+      # Installer (.exe): installs the portable build for the current user, with Start menu entry and uninstaller.
+      - name: Installer
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup --no-progress -y }
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=${{ steps.version.outputs.version }}" `
+            "/DSourceDir=..\publish\win-x64" "/DOutputDir=..\release" installer\DiwoonPixelArtManager.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed." }
+
+      # MSIX: packaged build, signed. With the MSIX_CERTIFICATE (base64 .pfx) and MSIX_CERTIFICATE_PASSWORD secrets
+      # every release uses the same certificate; without them a new self-signed one is made for this build.
+      - name: MSIX
+        shell: pwsh
+        env:
+          MSIX_CERTIFICATE: ${{ secrets.MSIX_CERTIFICATE }}
+          MSIX_CERTIFICATE_PASSWORD: ${{ secrets.MSIX_CERTIFICATE_PASSWORD }}
+        run: |
+          $version = "${{ steps.version.outputs.version }}.0"
+          $manifest = Get-Content $env:MANIFEST -Raw
+          $manifest = [regex]::Replace($manifest, '(<Identity[^>]*?Version=")[^"]*(")', "`${1}$version`${2}")
+          Set-Content $env:MANIFEST $manifest -Encoding utf8
+
+          $password = if ($env:MSIX_CERTIFICATE_PASSWORD) { $env:MSIX_CERTIFICATE_PASSWORD } else { [guid]::NewGuid().ToString() }
+          $pfx = ./scripts/New-SigningCertificate.ps1 -OutputFolder signing -Password $password -Base64Pfx "$env:MSIX_CERTIFICATE"
+
+          dotnet publish $env:PROJECT -c Release -p:Platform=x64 -r win-x64 --self-contained `
+            -p:WindowsPackageType=MSIX -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=true `
+            -p:AppxBundle=Never -p:UapAppxPackageBuildMode=SideloadOnly -p:AppxPackageSigningEnabled=false `
+            "-p:AppxPackageDir=$pwd\msix\\" -p:Version=${{ steps.version.outputs.version }}
+
+          $package = Get-ChildItem msix -Recurse -Filter *.msix | Select-Object -First 1
+          if (-not $package) { throw "No .msix was produced." }
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Recurse -Filter signtool.exe |
+            Where-Object FullName -like "*\x64\*" | Sort-Object FullName -Descending | Select-Object -First 1
+          & $signtool.FullName sign /fd SHA256 /f $pfx /p $password $package.FullName
+          if ($LASTEXITCODE -ne 0) { throw "Signing failed." }
+
+          Copy-Item $package.FullName "release/DiwoonPixelArtManager-${{ steps.version.outputs.version }}-x64.msix"
+          Copy-Item signing/DiwoonPixelArtManager.cer release/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DiwoonPixelArtManager-${{ steps.version.outputs.version }}
+          path: release/*
+
+      - name: GitHub release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true
+          body: |
+            ## Downloads
+            - **DiwoonPixelArtManager-…-Setup-x64.exe**: installer (recommended). No administrator rights needed.
+            - **DiwoonPixelArtManager-…-portable-x64.zip**: unzip anywhere and run `DiwoonPixelArtManager.exe`.
+            - **DiwoonPixelArtManager-…-x64.msix**: Windows package. Install `DiwoonPixelArtManager.cer` first
+              (double-click → Install Certificate → Local Machine → "Trusted People"), then open the .msix.
+
+            Windows 10 1809 or newer, x64. Unofficial app, not affiliated with Divoom.

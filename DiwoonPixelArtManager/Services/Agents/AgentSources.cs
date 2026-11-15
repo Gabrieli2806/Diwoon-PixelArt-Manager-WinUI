@@ -302,7 +302,11 @@ internal static partial class AgentSources
                     bool fresh = now - session.LastEventAt < DoneFresh;
                     return fresh ? (session.Phase == AgentStatus.Error ? AgentStatus.Error : AgentStatus.Done) : AgentStatus.Idle;
                 }
-                if (session.Pending.Values.Any(c => c.Kind is "ask" or "plan" || (InstantKinds.Contains(c.Kind) && now - c.At > PermissionDelay)))
+                // Calls made together report back together: a quick read next to a long command is not stuck on a
+                // permission prompt, it waits for the command. Only a lone instant call that stays pending is.
+                bool longCallRunning = session.Pending.Values.Any(c => !InstantKinds.Contains(c.Kind) && c.Kind is not ("ask" or "plan"));
+                if (session.Pending.Values.Any(c => c.Kind is "ask" or "plan"
+                        || (!longCallRunning && InstantKinds.Contains(c.Kind) && now - c.At > PermissionDelay)))
                     return AgentStatus.Waiting;
                 return state == "busy" ? AgentStatus.Working : AgentStatus.Waiting;
             }

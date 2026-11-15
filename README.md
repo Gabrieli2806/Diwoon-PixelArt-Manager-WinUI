@@ -10,7 +10,8 @@ PC monitor and show alerts for PC events.
 ## Features
 
 - **Gallery**: add images or whole folders (PNG, GIF, JPG, BMP, WebP, TIFF), or drag and drop them. A folder stays a
-  folder in the gallery (open it, play it as a slideshow, remove it in one go); adding it again picks up new images.
+  folder in the gallery (open it, play it as a slideshow, rename it inside the app without touching the folder on disk,
+  remove it in one go); adding it again picks up new images. Right-click a card for its actions.
   Search looks through every folder. The files stay where they are; removing from the gallery deletes nothing.
 - **Live preview**: see exactly what the display will show, LED by LED, with animations playing.
 - **Send to display**: one click (or double-click a card). Animated GIFs play on 16×16 Bluetooth displays and on
@@ -44,6 +45,15 @@ PC monitor and show alerts for PC events.
   and fit / fill / stretch for non-square images.
 - **Local HTTP API** (off by default) so scripts on the same PC can drive the display.
 - Light and dark theme, Mica / Acrylic window effects.
+
+## Download
+
+Get the latest version from [Releases](https://github.com/Gabrieli2806/Diwoon-PixelArt-Manager-WinUI/releases):
+
+- **`…-Setup-x64.exe`**: installer (recommended). Installs for your user only, no administrator rights.
+- **`…-portable-x64.zip`**: unzip anywhere and run `DiwoonPixelArtManager.exe`.
+- **`…-x64.msix`**: Windows package. Install `DiwoonPixelArtManager.cer` first (double-click → Install Certificate →
+  Local Machine → "Trusted People"), then open the `.msix`.
 
 ## Getting started
 

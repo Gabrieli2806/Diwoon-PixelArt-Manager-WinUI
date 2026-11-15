@@ -37,6 +37,13 @@ DiwoonPixelArtManager\bin\x64\Debug\net10.0-windows10.0.19041.0\win-x64\DiwoonPi
 dotnet publish DiwoonPixelArtManager\DiwoonPixelArtManager.csproj -c Release -p:Platform=x64 -r win-x64 --self-contained -o publish\win-x64
 ```
 
+- Publicar: `git tag v1.2.0 && git push origin v1.2.0`. `.github/workflows/release.yml` genera el zip portable, el
+  instalador .exe (Inno Setup, `installer/DiwoonPixelArtManager.iss`) y el .msix firmado con `signtool`
+  (`scripts/New-SigningCertificate.ps1`), y crea la release. Cada push deja los mismos archivos como artifacts.
+  Para que el certificado del .msix sea siempre el mismo, poner en los secrets del repo `MSIX_CERTIFICATE` (pfx en
+  base64, sujeto `CN=Gabrieli2806`) y `MSIX_CERTIFICATE_PASSWORD`; sin ellos cada build usa uno nuevo.
+- La build normal no está empaquetada; `Package.appxmanifest` solo se usa con `-p:WindowsPackageType=MSIX`.
+  En el paquete, "iniciar con Windows" usa la StartupTask del manifiesto en vez de la clave Run.
 - No hay pruebas automáticas. Sin pantalla, la API HTTP responde 503.
 - `curl` desde PowerShell 5: un POST sin cuerpo da 411 (HttpListener exige Content-Length); mandar el texto en el cuerpo.
 

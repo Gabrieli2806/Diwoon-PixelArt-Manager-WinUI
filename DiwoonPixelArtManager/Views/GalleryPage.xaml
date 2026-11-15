@@ -83,6 +83,7 @@
                       SelectionMode="Extended"
                       SelectionChanged="ArtGrid_SelectionChanged"
                       DoubleTapped="ArtGrid_DoubleTapped"
+                      RightTapped="ArtGrid_RightTapped"
                       ContainerContentChanging="ArtGrid_ContainerContentChanging">
                 <GridView.ItemTemplate>
                     <DataTemplate x:DataType="models:GalleryEntry">
@@ -155,6 +156,14 @@
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon x:Name="EditIcon" Glyph="&#xE70F;" FontSize="14" />
                                 <TextBlock x:Name="EditText" Text="Edit a copy" />
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="RenameButton" Style="{StaticResource Action}" HorizontalAlignment="Stretch"
+                                Visibility="Collapsed" Click="Rename_Click"
+                                ToolTipService.ToolTip="Changes the name shown in this app; the folder on disk keeps its name">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE8AC;" FontSize="14" />
+                                <TextBlock Text="Rename folder" />
                             </StackPanel>
                         </Button>
                         <ProgressBar x:Name="SendProgress" IsIndeterminate="True" Visibility="Collapsed" />

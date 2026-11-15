@@ -3,3 +3,8 @@ obj/
 publish/
 .vs/
 *.user
+release/
+signing/
+msix/
+AppPackages/
+*.pfx
